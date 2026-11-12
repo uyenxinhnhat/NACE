@@ -1,1 +1,750 @@
-   <meta http-equiv="refresh" content="0; url=index.html.html">
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ôn thi Coating Inspector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9ECEF; --surface:#FFFFFF; --ink:#1C2731; --muted:#5B6874; --line:#CBD2D9;
+  --steel:#1F5F7A; --steel-ink:#FFFFFF; --ok:#2B7A4B; --ok-bg:#E3F2E8; --bad:#B03A2A; --bad-bg:#F9E4E0;
+  --mark:#F2C230; --mark-bg:#FFF6D6; --chip:#DDE3E8;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141A1F; --surface:#1D252C; --ink:#E6EBEF; --muted:#9AA7B2; --line:#33404A;
+    --steel:#4FA3C4; --steel-ink:#0E1A20; --ok:#5DBB82; --ok-bg:#1C3326; --bad:#E57A6A; --bad-bg:#3A221E;
+    --mark:#E8B923; --mark-bg:#3A3218; --chip:#2A343C; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141A1F; --surface:#1D252C; --ink:#E6EBEF; --muted:#9AA7B2; --line:#33404A;
+  --steel:#4FA3C4; --steel-ink:#0E1A20; --ok:#5DBB82; --ok-bg:#1C3326; --bad:#E57A6A; --bad-bg:#3A221E;
+  --mark:#E8B923; --mark-bg:#3A3218; --chip:#2A343C; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+h1{font-size:1.75rem;line-height:1.2;margin:8px 0 4px;font-weight:700;letter-spacing:-0.01em}
+h2{font-size:1.15rem;margin:0 0 10px;font-weight:600}
+.sub{color:var(--muted);margin:0 0 20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.seg{border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:8px 14px;font-weight:500}
+.seg[aria-pressed="true"]{background:var(--steel);color:var(--steel-ink);border-color:var(--steel)}
+.label{font-weight:600;margin:14px 0 8px;font-size:.95rem}
+.label:first-child{margin-top:0}
+.check{display:flex;align-items:center;gap:10px;margin-top:10px}
+.check input{width:20px;height:20px;accent-color:var(--steel)}
+.primary{background:var(--steel);color:var(--steel-ink);border:0;border-radius:4px;padding:12px 20px;font-weight:600;font-size:1rem}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:4px;padding:11px 18px;font-weight:500}
+.primary:disabled{opacity:.45;cursor:default}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.stats{display:flex;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
+.stats b{color:var(--ink);font-size:1.3rem;display:block}
+
+/* quiz */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:.95rem;color:var(--muted)}
+.gauge{height:8px;background:var(--chip);border-radius:4px;overflow:hidden;margin-bottom:18px}
+.gauge span{display:block;height:100%;background:var(--steel);transition:width .25s}
+.qnum{font-weight:600;color:var(--steel);font-size:.95rem;margin-bottom:6px}
+.qtext{font-size:1.2rem;font-weight:600;line-height:1.4;margin:0 0 6px}
+.hint{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:6px;padding:12px 14px}
+.opt .k{flex:0 0 28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:600;font-size:.9rem}
+.opt.sel{border-color:var(--steel)}
+.opt.sel .k{background:var(--steel);color:var(--steel-ink);border-color:var(--steel)}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.ok .k{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt.bad .k{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:6px;border-left:4px solid var(--ok);background:var(--ok-bg)}
+.feedback.no{border-color:var(--bad);background:var(--bad-bg)}
+.feedback p{margin:4px 0 0}
+.flag{margin-top:10px;padding:8px 12px;background:var(--mark-bg);border-left:4px solid var(--mark);border-radius:4px;font-size:.9rem}
+.nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+.nav button{width:36px;height:36px;border-radius:4px;border:1px solid var(--line);background:var(--surface);font-size:.85rem}
+.nav button.done{background:var(--chip)}
+.nav button.cur{border:2px solid var(--steel);font-weight:700}
+
+/* result */
+.score{font-size:3.4rem;font-weight:700;line-height:1;margin:6px 0}
+.wrong{border-top:1px solid var(--line);padding:14px 0}
+.wrong:first-of-type{border-top:0}
+.wrong .q{font-weight:600;margin-bottom:6px}
+.wrong .you{color:var(--bad)}
+.wrong .right{color:var(--ok)}
+.wrong .ex{color:var(--muted);font-size:.92rem;margin-top:4px}
+
+/* flashcards */
+.card{min-height:240px;display:flex;flex-direction:column;justify-content:center;text-align:left;width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:24px}
+.card .side{font-size:.85rem;color:var(--muted);margin-bottom:10px}
+.card .txt{font-size:1.2rem;font-weight:600;line-height:1.45}
+.card.back{border-color:var(--steel)}
+.card.back .txt{color:var(--steel)}
+.tag{display:inline-block;background:var(--chip);border-radius:3px;padding:1px 8px;font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.setrow{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--line);border-radius:6px;margin-bottom:8px;background:var(--surface)}
+.setrow.on{border-color:var(--steel);box-shadow:inset 4px 0 0 var(--steel)}
+.setrow .name{flex:1;min-width:0;text-align:left;background:none;border:0;padding:2px 0}
+.meta{color:var(--muted);font-size:.88rem}
+.small{padding:6px 10px!important;font-size:.88rem}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:14px}
+.thumb{position:relative;aspect-ratio:3/4;border-radius:4px;overflow:hidden;border:1px solid var(--line);background:var(--chip)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:.9rem;line-height:1}
+.thumb span{position:absolute;left:4px;bottom:4px;background:rgba(0,0,0,.6);color:#fff;font-size:.75rem;padding:0 6px;border-radius:3px}
+input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+textarea{resize:vertical;min-height:60px}
+.edq{border-top:1px solid var(--line);padding:16px 0}
+.edq:first-of-type{border-top:0;padding-top:4px}
+.edhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:600}
+.edhead .sp{flex:1}
+.edopt{display:flex;gap:8px;align-items:center;margin-top:6px}
+.edopt input[type=checkbox]{width:22px;height:22px;flex:0 0 22px;accent-color:var(--ok)}
+.tag.sug{background:var(--mark-bg);color:var(--ink)}
+.tag.none{background:var(--bad-bg);color:var(--bad)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.status{margin-top:14px;padding:12px 14px;border-radius:6px;background:var(--chip)}
+.status.err{background:var(--bad-bg);color:var(--bad)}
+.hidden{display:none}
+.notepair{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start;margin-top:8px}
+@media (max-width:520px){.notepair{grid-template-columns:1fr}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px;z-index:50}
+.modal .box{background:var(--surface);color:var(--ink);border-radius:8px;padding:20px;max-width:420px;width:100%;border:1px solid var(--line)}
+.modal .box p{margin:0 0 4px}
+.answer{margin-top:14px;padding:14px 16px;border-radius:6px;border-left:4px solid var(--steel);background:var(--chip);font-weight:600}
+.selfgrade{margin-top:14px}
+.selfgrade .row{margin-top:8px}
+.seg.okp[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.seg.badp[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+/* ---------- DATA ---------- */
+const TF = ['True','False'];
+const QUESTIONS = [
+ {s:1,q:'What’s the following coating that is not a polymerization-cure coating?',o:['Zinc rich epoxy','Moisture cure urethane','Vinyl','Alkyd'],a:2,ex:'Vinyl khô bằng bay hơi dung môi (lacquer), không có phản ứng polymer hóa.'},
+ {s:1,q:'Which is not in the four distinct stages in powder coating?',o:['Flow','Wetting','Gel','Evaporation'],a:3,ex:'Powder coating không chứa dung môi nên không có giai đoạn bay hơi.'},
+ {s:1,q:'Gamma layer in hot dip galvanizing – composition of zinc and iron?',o:['94% Zn 6% Fe','90% Zn 10% Fe','80% Zn 20% Fe','75% Zn 25% Fe'],a:3,ex:'Gamma ≈ 75% Zn/25% Fe; Delta ≈ 90/10; Zeta ≈ 94/6; Eta ≈ 100% Zn.'},
+ {s:1,q:'In most cases, what reduces risks to the worker and inspector immediately?',o:['Observing when moving','Situational awareness','Wearing safety helmet','All'],a:3},
+ {s:1,q:'What are pipelines from storage to different markets called?',o:['Gathering','Midstream','Transmission','Distribution'],a:2,low:true,ex:'Transmission vận chuyển khối lượng lớn tới các thị trường; distribution giao tới người dùng cuối.'},
+ {s:1,q:'How much solids does vinyl contain?',o:['80%','50%','25%','15% (chữ khó đọc)'],a:2,low:true,ex:'Vinyl là loại hàm lượng rắn thấp (khoảng 15–25%).'},
+ {s:1,q:'What causes rust stain in hot dip galvanizing?',o:['Spent kettle','Temperature low','Seepage from joint','Flux'],a:2,ex:'Vết gỉ thường do dung dịch thấm ra từ mối chồng, mối nối (weeping).'},
+ {s:1,q:'What is the following … can be extruded by?',o:['Cross head extruded','Side extruded','Either A and B','Tape'],a:2},
+ {s:1,q:'Which standard is used by multiple nations?',o:['Voluntary','Mandatory','National','International Standard'],a:3},
+ {s:1,q:'What’s not an antifouling purpose?',o:['Make hull so slick','Make hull distasteful','Rejection of biofouling','Decrease vessel speed'],a:3},
+ {s:1,q:'Surface preparation for new surface lining.',o:['Sa 3 / NACE 1 / SSPC SP 5','Sa 2.5 / NACE 2 / SSPC SP 10','Sa 3 / NACE 1 / SSPC SP 10','Sa 2.5 / NACE 1 / SSPC SP 5'],a:0,ex:'Lining ngâm mới thường yêu cầu white metal: Sa 3 / NACE No.1 / SSPC-SP 5.'},
+ {s:1,q:'What’s efflorescence?',o:['A weak surface layer','A strong surface layer','Moisture passing through the concrete','Porous surface layer'],a:2},
+ {s:1,q:'When 2 compounds are mixed together, it is called?',o:['Chemical induced polymerization','Solvent evaporation','Oxygen-induced polymerization','All'],a:0},
+ {s:1,q:'What’s causing chalking?',o:['UV light','Too thin','Too thick','Apply on dirty surface'],a:0},
+ {s:1,q:'What is the main health risk of electrostatic spray?',o:['Nausea','Burns','Dizziness','Headaches'],a:1,ex:'Phun tĩnh điện dùng điện áp cao nên rủi ro chính là bỏng/điện giật.'},
+ {s:1,q:'What’s foul release?',o:['Hull so slick','Damages easily','Rejection'],a:0,ex:'Foul release làm bề mặt rất trơn để sinh vật bám kém và bong ra khi tàu chạy.'},
+ {s:1,q:'Most advantage of the coal tar enamel',o:['Higher performing','Waste treatment','Easy application','More economical'],a:0,low:true},
+ {s:1,q:'Where do common crevices occur?',o:['Uniformly','Cavitation erosion','Metal to metal contact','Discrete site'],a:2},
+ {s:1,q:'How long to completely cure powder coat?',o:['30 s','100 s','180 s','300 s'],a:2,low:true},
+ {s:1,q:'Dehumidification will control a corrosion cell by influencing which of the following?',o:['Cathode','Electrolyte','Metallic pathway','Anode'],a:1,marked:true,ex:'Giảm độ ẩm → loại bỏ chất điện ly (electrolyte).'},
+
+ {s:2,q:'Polymer cement is an aggregate filled resin used for industrial floors and drain systems.',o:TF,a:0},
+ {s:2,q:'Repair to glass lining defects can be made using:',o:['Liquid resin','Tantalum disc','PTFE washer','All of above'],a:3},
+ {s:2,q:'Dry spray of an inorganic zinc-rich primer may be caused by:',o:['Over atomization','Low flash point solvents','Improper spray technique','All of above'],a:3},
+ {s:2,q:'Centrifugal blast cleaning requires:',o:['Large volume of air to propel the abrasive','Very large nozzle','Well-maintained blast wheel','The use of single use abrasive'],a:2},
+ {s:2,q:'When performing testing in accordance with ASTM D2583, inspector may observe:',o:['Adhesion failure','Cohesion failure','Glue failure','Cold flow or creep'],a:3},
+ {s:2,q:'Documentation requirements should be defined:',o:['At pre-job conference','In the specification','By contractor','By inspector'],a:1},
+ {s:2,q:'ASTM D4138 – inspector will use:',o:['14 pencil','Tooke gauge','Adhesion tester','Hardness tester'],a:1},
+ {s:2,q:'You are NACE Level 2 inspector. Upon arriving onsite the Contractor’s Supervisor advises you in no uncertain terms that you will be next to go. Your action is:',o:['Express a willingness to work with site team and follow specification','Suggest to the owner that the supervisor should be removed','Defend the previous inspector','Challenge supervisor’s authority'],a:0},
+ {s:2,q:'Main reason dehumidification is used during coating operation:',o:['Reduce the possibility of missing the recoat window','Control the environment','Avoid repetitive blasting/coating operation','Allow contractor to guarantee the completion date'],a:1},
+ {s:2,q:'Coating application to concrete is:',o:['More challenging than coating steel','Less challenging than coating steel','The same as coating steel','Not required as concrete is inorganic'],a:0},
+ {s:2,q:'Application of Thermal Spray Coatings requires:',o:['The same skill as liquid coating','Specialized skill supported by training and experience','No particular skill','The same skill as welding'],a:1},
+ {s:2,q:'Galvanizing performs best in which exposure?',o:['pH < 4','pH > 12','pH = 5–10','pH = 13'],a:2},
+ {s:2,q:'Inspection and Test Plans are provided to:',o:['Outline inspection steps, sequencing and pass/fail criteria','So the inspector doesn’t have to read the entire specification','To supersede the requirements of the product data sheet','So the contractor has a single document to reference'],a:0},
+ {s:2,q:'Inspection and Test Plans are developed by referencing:',o:['The specification, TDS, Relevant Standards and Codes','The specification, SDS, Relevant Standards and Codes','The specification, application guidelines, Relevant Standards and Codes','The specification, Safety Manual, Relevant Standards and Codes'],a:0},
+ {s:2,q:'WJ-1 is always performed using UHP WJ at pressure above 210 MPa (30,000 psi).',o:TF,a:0},
+ {s:2,q:'Working with someone who is very concerned about stability and maintaining adherence to status quo, inspector should:',o:['Implement immediately to get them motivated','Give them as much advance notice as possible about upcoming change','Challenge their value to the team and try to get them out of comfort zone','Make sure they are center of attention in all site meetings'],a:1},
+ {s:2,q:'Use magnifiers to examine all of the following except:',o:['Surface profile','Surface cleanliness','Blister','Mill scale'],a:1},
+ {s:2,q:'Used in conjunction with other coatings such as FBE when lines go through wetland or a body of water:',o:['2LPE','3LPE','Concrete','Coal tar enamel'],a:2},
+ {s:2,q:'Inspector performs tests on linings that may not be performed on exterior coatings because:',o:['Coatings are more durable than linings','Coatings are expected to degrade over time','Linings protect the contents and the container','Linings are more durable than coatings'],a:2},
+ {s:2,q:'You, NACE II inspector, just arrived on a job in progress where there is no inspection and test plan. You are asked to take dry film thickness readings:',o:['Refuse to take readings until one is in place','Develop your own methodology','Use generally accepted industry standard & take reading','Call your supervisor'],a:2},
+ {s:2,q:'Main line coating is defined as total coating on body of pipeline and any field joint coating.',o:TF,a:0},
+ {s:2,q:'When ASTM D3363 (pencil test) is specified, the inspector must:',o:['Record the percentage of failure','Use the correct solvent','Record the highest value attained','Record two end points identified in the standard'],a:3},
+ {s:2,q:'Stationary floating structure is being coated and a self-smoothing anti-fouling coating has been specified. This is not a good choice because:',o:['It contains biocide','It doesn’t contain biocide','It will result in very slippery surface','The floating structure is stationary'],a:3,ex:'Self-smoothing (self-polishing) cần nước chảy qua bề mặt khi tàu chạy để mài mòn – công trình đứng yên thì không hoạt động.'},
+ {s:2,q:'When an independent 3rd party NACE Level 3, representing owner, shows you a copy of an NCR which you previously approved, you should:',o:['Consult your supervisor','Request a re-blast of the item','Review NCR with other inspector','Verbally challenge the NCR'],a:0},
+ {s:2,q:'NACE No. 13 / SSPC-SP16 identified the use of:',o:['Waterjetting only','Various methods of cleaning','Steam cleaning only','Abrasive blasting only'],a:1},
+ {s:2,q:'All of these are advantages of using repair patches EXCEPT:',o:['Special tools or equipment are required','Barrier to moisture and corrosion','Excellent abrasion resistance','Inert to common acids, alkalis, solvents'],a:0},
+ {s:2,q:'Coating survey may include which steps?',o:['Summarize the collected data','Develop survey plan','Schedule the remedial work','Evaluate the coating performance'],a:[0,1,2,3]},
+ {s:2,q:'Anti-fouling coatings are regulated by international treaties.',o:TF,a:0},
+ {s:2,q:'Single component water borne acrylic coating cures by:',o:['Solvent evaporation','Coalescence','Co-reaction','Oxidation'],a:1},
+ {s:2,q:'Liquid coating applied to galvanized ferrous substrate – measure DFT by:',o:['Ultrasonic DFT gauge','Tooke gauge','Eddy current gauge','Magnetic gauge'],a:1},
+ {s:2,q:'The most likely area of failure on a buried external pipeline:',o:['Mainline','Field joint coating','Area exposed to UV light','Ground bed'],a:1},
+ {s:2,q:'Instrument for holiday test of thick film coating on concrete:',o:['Low voltage sponge type','High voltage DC pulse type','High voltage DC constant current','High voltage AC'],a:2},
+ {s:2,q:'You find out 1 week of daily reports are missing:',o:['Use creative writing to cover over the missing facts','Plainly state in your report that they are missing','Do not complete report until they can be found','Re-create report'],a:1},
+ {s:2,q:'Inspector reports should always be copied to:',o:['All parties involved in the project','Whomever the owner identified','Contractor & owner','Owner only'],a:1},
+ {s:2,q:'As NACE Level 2 inspector, NACE clearly indicates that you are qualified to independently produce final documentation for a shop project.',o:TF,a:0},
+ {s:2,q:'In a specification, a specific list of items NOT to be painted may be found in:',o:['Administrative provisions','Material section','Surface preparation section','Coating schedule section'],a:3},
+ {s:2,q:'Surface preparation of non-ferrous metals includes degreasing and cleaning.',o:TF,a:0},
+ {s:2,q:'When using a destructive Paint Inspection Gauge, NACE inspector must:',o:['Determine the DFT of coating prior to use','Ensure glue on dolly properly applied prior to use','Consult SSPC Guide 1 prior to use','Select appropriate hand wheel based on the measured DFT prior to use'],a:0},
+ {s:2,q:'As NACE Level 2 Inspector on a field job, prior to submission your documentation should always be reviewed and approved by:',o:['NACE Protective Coating Specialist','NACE Level 1','NACE Level 2','A NACE Level 3 inspector'],a:3},
+ {s:2,q:'You are NACE Level 2 inspector reviewing documentation from NACE Level 1 and notice significant errors. You should:',o:['Correct errors and suggest CIP 1 be replaced','Correct errors and advise supervisor that CIP 1 is incompetent','Have Level 1 inspector correct errors & set up remedial training to improve','Correct errors and submit report without action'],a:2},
+ {s:2,q:'Coating expected to be exposed to temperatures above 93 °C – the best choice:',o:['Organic coatings','Polyurea','Inorganic coatings','Latex'],a:2},
+ {s:2,q:'In pipeline, coal tar enamel used for pipe coating is generally applied in molten form at thickness close to:',o:['25 mils','50 mils (~1250 µm)','100 mils','250 mils'],a:1},
+ {s:2,q:'Sheet lining materials effectively bridge small cracks in concrete.',o:TF,a:0},
+ {s:2,q:'Blasting of steel or concrete substrate shall be preceded by:',o:['Acid etching','Vacuum cleaning','Removal of any oil or grease'],a:2},
+ {s:2,q:'Top interior vapour space of large diameter concrete sewer is often coated with coal tar epoxy or similar products.',o:TF,a:0},
+ {s:2,q:'FBE generally cures at approximately 816 °C (1500 °F).',o:TF,a:1},
+ {s:2,q:'FBE is a thermoset material.',o:TF,a:0},
+ {s:2,q:'Sulfuric acid is most widely used for acid etching concrete.',o:TF,a:1,ex:'Axit phổ biến nhất là hydrochloric (HCl).'},
+ {s:2,q:'PE pipe for gas service is joined together by bell & spigot with “O” ring gasket.',o:TF,a:1},
+ {s:2,q:'Which does the “S” type deserve?',o:['Many new and varied activities','Freedom from control and work infringement','Power and authorities','Minimum work infringement on home life'],a:3},
+ {s:2,q:'Soft rubber can be used for hydrochloric acid and food grade phosphoric acid service.',o:TF,a:0},
+ {s:2,q:'Cathodic disbondment test specifically measures:',o:['Resistance of coating to disbondment due to DC electric current','Resistance of coating to disbondment due to corrosion of substrate','Flexibility','None of above','All of above'],a:0},
+ {s:2,q:'Individuals conducting a coating survey should:',o:['Always be NACE Level 3 Certified Inspector','Always be NACE or SSPC Protective Coating Specialists','Always be experienced specification writers','Always be trained and experienced in coating industry'],a:1},
+ {s:2,q:'Cost of qualified coating inspection is normally offset by:',o:['Lower application cost','Lower coating life cycle cost','Lower safety enforcement cost','Lower supervision cost'],a:1},
+ {s:2,q:'An Inspection and Test Plan is required when:',o:['It is always required','When coating applicator requests','When owner specifies','When inspector requests'],a:0}
+];
+
+const NOTES = [
+ ['When observing design defects, NACE Inspector should','Document the defect and potential problems that could result'],
+ ['Calibrate pH meter by','Standard buffer solution'],
+ ['Inspector should write report using','Language that most would understand'],
+ ['Galvanized steel to be overcoated; spec references SSPC-SP16 but abrasive blast not permitted. Replacement method?','SP1 followed by SP2'],
+ ['Eddy current DFT gauge is used to measure','Non-conductive coating applied to conductive (non-ferrous) metallic substrate'],
+ ['NACE International Standards are developed by','Standard committees'],
+ ['Conflict between Product Data Sheet and Specification','The specification prevails'],
+ ['When conducting inspection, the inspector should follow which standard?','The specified standard'],
+ ['Type of concrete where laitance is commonly encountered','Poured (wet cast)'],
+ ['Surface preparation of concrete is performed using','Methods that have been modified for concrete'],
+ ['Solvent wipe test (ASTM D4752) is used to determine cure of','Inorganic zinc'],
+ ['External coatings on buried pipelines are generally tested for','Cathodic disbondment'],
+ ['Pre-cleaning will not remove','Mill scale'],
+ ['Tank lining job, first blast cleaning: you see apparent staining; contractor says it’s normal. Your action?','Review the standard with contractor and re-inspect the floor'],
+ ['Cold applied tape','Polyethylene film, heat laminated with an adhesive layer of butyl glue'],
+ ['Hardness test on a coating with elastic properties – inspector will likely observe','Cold flow or creep'],
+ ['When observing fabrication defect, NACE Inspector should','Consult the specification to determine how they should be treated'],
+ ['Non-Conformance Reports are designed to','Identify items that do not meet the specification requirement'],
+ ['Surface prep method using dilute acid to remove laitance and roughen concrete','Acid etching'],
+ ['Bulk store coatings containing isocyanates','In a well ventilated area separate from work place'],
+ ['Steel shot/grit contaminated with oil and grease should be','Disposed of properly'],
+ ['Thermal spray coating provides','Sacrificial protection'],
+ ['Test for soluble iron salts is important because','These salts may indicate the presence of active corrosion cells'],
+ ['When sacking or stoning finish treatments are used on concrete, it is important','To start the treatment as soon as possible after the concrete forms are removed'],
+ ['Efflorescence is caused by','Moisture passing through concrete'],
+ ['NACE Level 2 inspectors are authorized to perform','Visual inspection, non-destructive and destructive testing'],
+ ['Asked to supervise a team of uncertified pipeline inspectors','Review NACE attestation prior to making decision'],
+ ['Coating survey is legally required','On commercial marine vessels and offshore platforms'],
+ ['Inspector’s goal at pre-job conference','Obtain a clear understanding of the specification'],
+ ['Back thrust','1/3']
+];
+
+/* ---------- SETS & STORAGE ---------- */
+// Chỉ giữ đáp án có trong vở; câu không có đáp án để trống (a:[])
+const BUILTIN={id:'builtin',name:'Vở ôn NACE (có sẵn)',builtin:true,
+  questions:QUESTIONS.map(q=>{const fromNotes=!(q.s===1&&!q.marked);return {q:q.q,o:q.o.slice(),a:fromNotes?(Array.isArray(q.a)?q.a:[q.a]):[],src:fromNotes?'marked':'none',ex:fromNotes&&/Sulfuric/.test(q.q)?(q.ex||''):''}}),
+  notes:NOTES.map(([f,b])=>({f,b}))};
+const KEY='nace-quiz-v3';
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}};
+const save=d=>{try{localStorage.setItem(KEY,JSON.stringify(d));return true}catch(e){return false}};
+function clean(s){s.questions.forEach(q=>{if(q.src!=='marked'||!Array.isArray(q.a)){q.a=q.src==='marked'?[].concat(q.a||[]):[];q.src=q.a.length?'marked':'none'}});return s}
+const allSets=()=>{const d=load();return [d.builtinOverride?clean(d.builtinOverride):BUILTIN,...(d.sets||[]).map(clean)]};
+const activeSet=()=>{const d=load();return allSets().find(s=>s.id===d.active)||allSets()[0]};
+const getStat=id=>((load().stats||{})[id])||{};
+function putStat(id,st){const d=load();d.stats=d.stats||{};d.stats[id]=st;save(d)}
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ---------- HELPERS ---------- */
+const L='ABCDEFGH';
+const app=document.getElementById('app');
+const render=(...k)=>app.replaceChildren(...k.flat(Infinity).filter(x=>x!=null&&x!==false));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const el=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){const v=attrs[k];if(v===false||v==null)continue;if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='value')e.value=v;else if(k==='checked')e.checked=!!v;else e.setAttribute(k,v)}kids.flat(Infinity).forEach(c=>{if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(c))});return e};
+const sameSet=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
+const isTF=q=>q.o.length===2&&q.o[0]==='True'&&q.o[1]==='False';
+const srcTag=q=>q.a.length?el('span',{class:'tag ok'},'Có đáp án'):el('span',{class:'tag none'},'Chưa có đáp án');
+// Hộp thoại trong trang (confirm/alert của trình duyệt bị chặn trong khung artifact)
+function ask(msg,ok='Đồng ý',cancel='Huỷ'){
+  return new Promise(res=>{
+    const close=v=>{ov.remove();document.removeEventListener('keydown',esc,true);res(v)};
+    const esc=e=>{if(e.key==='Escape'){e.stopPropagation();close(false)}};
+    const okBtn=el('button',{class:'primary',onclick:()=>close(true)},ok);
+    const ov=el('div',{class:'modal',onclick:e=>{if(e.target===ov&&cancel)close(false)}},
+      el('div',{class:'box',role:'dialog','aria-modal':'true'},el('p',{},msg),
+        el('div',{class:'actions'},cancel?el('button',{class:'ghost',onclick:()=>close(false)},cancel):null,okBtn)));
+    document.body.append(ov);document.addEventListener('keydown',esc,true);okBtn.focus();
+  });
+}
+const notify=msg=>ask(msg,'Đã hiểu',null);
+
+const cfg=Object.assign({filter:'all',mode:'practice',count:'20',shufQ:true,shufO:true},load().cfg||{});
+if(!['all','mcq','open'].includes(cfg.filter))cfg.filter='all';
+function persist(){const d=load();d.cfg=cfg;save(d)}
+let S=null,view=null,keyHandler=null;
+const setKeys=fn=>{keyHandler=fn};
+document.addEventListener('keydown',e=>{if(keyHandler&&!document.querySelector('.modal')&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!/INPUT|TEXTAREA/.test(e.target.tagName))keyHandler(e)});
+
+/* ---------- CLAUDE (scan) ---------- */
+const IN_CLAUDE=!!(window.claude&&window.claude.use);
+let SAMPLE=null,IMG=null,SAMPLE_READY=false;
+// Ngoài Claude (vd. GitHub Pages): gọi thẳng Claude API bằng API key của người dùng
+const API_LIM={maxCount:3,mediaTypes:['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif'],maxInputBytes:40*1024*1024};
+const API_MODEL='claude-sonnet-5-5';
+const KEYSTORE='nace-quiz-apikey';
+const getKey=()=>{try{return localStorage.getItem(KEYSTORE)||''}catch(e){return ''}};
+const setKey=k=>{try{k?localStorage.setItem(KEYSTORE,k):localStorage.removeItem(KEYSTORE)}catch(e){}};
+const LIM=()=>IN_CLAUDE?IMG:API_LIM;
+const canScanNow=()=>IN_CLAUDE?!!(SAMPLE&&IMG):true;
+if(window.claude&&window.claude.use){
+  window.claude.use('sample').then(s=>{SAMPLE=s;return s?s.limits().catch(()=>null):null})
+    .then(l=>{IMG=(l&&l.images)||null;SAMPLE_READY=true;if(view)view()})
+    .catch(()=>{SAMPLE_READY=true;if(view)view()});
+} else SAMPLE_READY=true;
+
+/* ---------- HOME ---------- */
+const countMcq=s=>s.questions.filter(q=>q.a.length).length;
+const countNoAns=s=>s.questions.filter(q=>!q.a.length).length;
+function poolKeys(set){
+  const k=[];
+  if(cfg.filter!=='open')set.questions.forEach((q,i)=>{if(q.a.length)k.push('q:'+i)});
+  if(cfg.filter!=='mcq')set.notes.forEach((n,i)=>k.push('n:'+i));
+  return k;
+}
+function home(){
+  view=home;setKeys(null);
+  const set=activeSet(),st=getStat(set.id),d=load();
+  const pool=poolKeys(set).length;
+  const seg=(name,val,text)=>el('button',{class:'seg','aria-pressed':String(cfg[name]===val),onclick:()=>{cfg[name]=val;persist();home()}},text);
+  const box=(name,text)=>el('label',{class:'check'},el('input',{type:'checkbox',checked:cfg[name],onchange:e=>{cfg[name]=e.target.checked;persist()}}),text);
+  const wrongKeys=(st.wrong||[]).filter(k=>makeItem(set,k));
+  const canScan=canScanNow();
+  render(
+    el('h1',{},'Ôn thi Coating Inspector'),
+    el('p',{class:'sub'},'Làm bài từ vở ôn, hoặc chụp ảnh vở để tạo bộ câu hỏi mới.'),
+    el('div',{class:'panel'},
+      el('h2',{},'Bộ câu hỏi'),
+      allSets().map(s=>{const na=countNoAns(s);return el('div',{class:'setrow'+(s.id===set.id?' on':'')},
+        el('button',{class:'name','aria-pressed':String(s.id===set.id),onclick:()=>{const d=load();d.active=s.id;save(d);home()}},
+          el('strong',{},s.name),el('div',{class:'meta'},`${countMcq(s)} trắc nghiệm, ${s.notes.length} tự luận`+(na?`, ${na} câu chưa có đáp án`:''))),
+        el('button',{class:'ghost small',onclick:()=>review(clone(s),false)},'Sửa'),
+        s.builtin?(d.builtinOverride?el('button',{class:'ghost small',onclick:resetBuiltin},'Khôi phục'):null):el('button',{class:'ghost small',onclick:()=>delSet(s)},'Xoá'))}),
+      el('div',{class:'actions'},
+        el('button',{class:'ghost',disabled:canScan?false:'disabled',onclick:()=>{SCAN={files:[],name:''};scanView()}},'Quét ảnh vở mới'),
+        el('button',{class:'ghost',onclick:importFile},'Nhập file JSON')),
+      !canScan?el('p',{class:'meta',style:'margin:8px 0 0'},SAMPLE_READY?'Tài khoản này không dùng được tính năng quét ảnh.':'Đang kiểm tra tính năng quét ảnh…'):null
+    ),
+    st.last?el('div',{class:'panel'},el('div',{class:'stats'},
+      el('div',{},el('b',{},st.last.pct+'%'),'Lần gần nhất'),
+      el('div',{},el('b',{},(st.best??0)+'%'),'Điểm cao nhất'),
+      el('div',{},el('b',{},st.runs||0),'Số lần làm'),
+      el('div',{},el('b',{},wrongKeys.length),'Câu đang sai'))):null,
+    el('div',{class:'panel'},
+      el('div',{class:'label'},'Loại câu'),
+      el('div',{class:'row'},seg('filter','all','Tất cả'),seg('filter','mcq','Trắc nghiệm'),seg('filter','open','Tự luận')),
+      el('div',{class:'label'},'Chế độ'),
+      el('div',{class:'row'},seg('mode','practice','Luyện tập – xem đáp án ngay'),seg('mode','exam','Thi thử – chấm khi nộp')),
+      el('div',{class:'label'},'Số câu'),
+      el('div',{class:'row'},seg('count','10','10'),seg('count','20','20'),seg('count','40','40'),seg('count','all',`Tất cả (${pool})`)),
+      box('shufQ','Xáo trộn thứ tự câu'),
+      box('shufO','Xáo trộn đáp án (trừ câu True/False)'),
+      el('div',{class:'actions'},
+        el('button',{class:'primary',disabled:pool?false:'disabled',onclick:()=>start()},'Bắt đầu làm bài'),
+        wrongKeys.length?el('button',{class:'ghost',onclick:()=>start(wrongKeys)},`Làm lại ${wrongKeys.length} câu sai`):null,
+        el('button',{class:'ghost',onclick:cards},'Thẻ ghi nhớ')),
+      !pool?el('p',{class:'meta',style:'margin:10px 0 0'},'Bộ này chưa có câu nào làm được. Bấm “Sửa” để thêm đáp án, hoặc chọn bộ khác.'):null
+    ),
+    countNoAns(set)?el('div',{class:'flag'},`Bộ này có ${countNoAns(set)} câu trắc nghiệm chưa có đáp án trong vở nên không xuất hiện khi làm bài. Bấm “Sửa” để tích đáp án cho các câu đó.`):null
+  );
+}
+async function delSet(s){
+  if(!await ask(`Xoá bộ “${s.name}”? Không thể hoàn tác.`,'Xoá'))return;
+  const d=load();d.sets=(d.sets||[]).filter(x=>x.id!==s.id);if(d.stats)delete d.stats[s.id];if(d.active===s.id)d.active='builtin';save(d);home();
+}
+async function resetBuiltin(){
+  if(!await ask('Khôi phục bộ có sẵn về ban đầu? Các chỉnh sửa của bạn trên bộ này sẽ mất.','Khôi phục'))return;
+  const d=load();delete d.builtinOverride;if(d.stats)delete d.stats.builtin;save(d);home();
+}
+function importFile(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=async()=>{
+    const f=inp.files[0];if(!f)return;
+    try{
+      const r=JSON.parse(await f.text());
+      const qs=(r.QUESTIONS||[]).filter(q=>q&&typeof q.q==='string'&&Array.isArray(q.o)&&q.o.length>=2).map(q=>{
+        const o=q.o.map(String);
+        const a=q.s===1?[]:[...new Set((Array.isArray(q.a)?q.a:[q.a]).filter(n=>Number.isInteger(n)&&n>=0&&n<o.length))];
+        return {q:q.q,o,a,src:a.length?'marked':'none',ex:''};
+      });
+      const ns=(r.NOTES||[]).filter(n=>Array.isArray(n)&&n[0]&&n[1]).map(([x,y])=>({f:String(x),b:String(y)}));
+      if(!qs.length&&!ns.length)throw 0;
+      review({id:'s'+Date.now(),name:f.name.replace(/\.json$/i,''),questions:qs,notes:ns},true);
+    }catch(e){notify('File này không đúng định dạng questions.json của script quét.')}
+  };
+  inp.click();
+}
+
+/* ---------- QUIZ ---------- */
+function makeItem(set,key){
+  const [t,i]=String(key).split(':');
+  if(t==='q'){const q=set.questions[+i];if(!q||!q.a.length)return null;const idx=q.o.map((_,k)=>k);return {key,kind:'mcq',q,order:(cfg.shufO&&!isTF(q))?shuffle(idx):idx,sel:[],checked:false}}
+  if(t==='n'){const n=set.notes[+i];if(!n)return null;return {key,kind:'open',n,shown:false,self:null}}
+  return null;
+}
+const isRight=it=>it.kind==='mcq'?sameSet(it.sel,it.q.a):it.self===true;
+const isDone=(it,practice)=>it.kind==='mcq'?(practice?it.checked:it.sel.length>0):it.self!==null;
+function start(keys){
+  const set=activeSet();
+  let list=keys||poolKeys(set);
+  if(cfg.shufQ)list=shuffle(list);
+  if(!keys&&cfg.count!=='all')list=list.slice(0,+cfg.count);
+  const items=list.map(k=>makeItem(set,k)).filter(Boolean);
+  if(!items.length)return;
+  S={set,mode:cfg.mode,i:0,items};
+  renderQ();
+}
+function renderQ(){
+  view=null;
+  const it=S.items[S.i],n=S.items.length,practice=S.mode==='practice',last=S.i===n-1;
+  const answered=S.items.filter(x=>isDone(x,practice)).length;
+  const next=()=>{if(last)finish();else{S.i++;renderQ()}};
+  let body=[],main=null;
+  if(it.kind==='mcq'){
+    const q=it.q,multi=q.a.length>1,locked=practice&&it.checked;
+    const opts=it.order.map((orig,pos)=>{
+      let cls='opt';
+      if(locked){if(q.a.includes(orig))cls+=' ok';else if(it.sel.includes(orig))cls+=' bad'}
+      else if(it.sel.includes(orig))cls+=' sel';
+      return el('button',{class:cls,disabled:locked?'disabled':false,onclick:()=>pick(orig)},el('span',{class:'k'},L[pos]),el('span',{},q.o[orig]));
+    });
+    let fb=null;
+    if(locked){const ok=sameSet(it.sel,q.a);
+      fb=el('div',{class:'feedback'+(ok?'':' no')},el('strong',{},ok?'Chính xác.':'Chưa đúng.'),
+        ok?null:el('p',{},'Đáp án: '+q.a.map(a=>L[it.order.indexOf(a)]+'. '+q.o[a]).join('; ')),q.ex?el('p',{},q.ex):null)}
+    body=[el('div',{class:'qnum'},S.set.name,' ',el('span',{class:'tag'},isTF(q)?'True / False':'Trắc nghiệm')),
+      el('p',{class:'qtext'},q.q),multi?el('p',{class:'hint'},'Chọn tất cả đáp án đúng.'):null,el('div',{class:'opts'},opts),fb];
+    if(practice)main=!it.checked?el('button',{class:'primary',disabled:it.sel.length?false:'disabled',onclick:()=>{it.checked=true;renderQ()}},'Kiểm tra')
+      :el('button',{class:'primary',onclick:next},last?'Xem kết quả':'Câu tiếp');
+  } else {
+    const grade=v=>{it.self=v;renderQ()};
+    body=[el('div',{class:'qnum'},S.set.name,' ',el('span',{class:'tag'},'Tự luận')),
+      el('p',{class:'qtext'},it.n.f),
+      !it.shown?el('p',{class:'hint'},'Tự nhớ câu trả lời, rồi bấm “Xem đáp án”.'):null,
+      it.shown?el('div',{class:'answer'},it.n.b):null,
+      it.shown?el('div',{class:'selfgrade'},el('div',{class:'hint',style:'margin:0'},'Bạn trả lời đúng không?'),
+        el('div',{class:'row'},el('button',{class:'seg okp','aria-pressed':String(it.self===true),onclick:()=>grade(true)},'Đúng'),
+          el('button',{class:'seg badp','aria-pressed':String(it.self===false),onclick:()=>grade(false)},'Chưa đúng'))):null];
+    if(!it.shown)main=el('button',{class:'primary',onclick:()=>{it.shown=true;renderQ()}},'Xem đáp án');
+    else if(practice)main=el('button',{class:'primary',disabled:it.self===null?'disabled':false,onclick:next},last?'Xem kết quả':'Câu tiếp');
+  }
+  if(!practice&&!(it.kind==='open'&&!it.shown))main=last?el('button',{class:'primary',onclick:confirmFinish},'Nộp bài'):el('button',{class:'primary',onclick:next},'Câu tiếp');
+  render(
+    el('div',{class:'topbar'},el('span',{},`Câu ${S.i+1} / ${n}`),el('button',{class:'ghost small',onclick:async()=>{if(await ask('Thoát bài đang làm? Kết quả sẽ không được lưu.','Thoát'))home()}},'Thoát')),
+    el('div',{class:'gauge'},el('span',{style:`width:${answered/n*100}%`})),
+    el('div',{class:'panel'},body,
+      el('div',{class:'actions'},
+        S.i>0&&!practice?el('button',{class:'ghost',onclick:()=>{S.i--;renderQ()}},'Câu trước'):null,
+        main,
+        !practice&&!last?el('button',{class:'ghost',onclick:confirmFinish},'Nộp bài'):null)),
+    !practice?el('div',{class:'nav'},S.items.map((x,k)=>el('button',{class:(isDone(x,false)?'done ':'')+(k===S.i?'cur':''),'aria-label':'Câu '+(k+1),onclick:()=>{S.i=k;renderQ()}},k+1))):null
+  );
+  setKeys(e=>{
+    if(it.kind==='mcq'){
+      const k=e.key.toUpperCase();let pos=L.indexOf(k);if(pos<0&&/^[1-8]$/.test(k))pos=+k-1;
+      if(k.length===1&&pos>=0&&pos<it.order.length&&!(practice&&it.checked)){e.preventDefault();pick(it.order[pos]);return}
+    }
+    if(e.key==='Enter'&&main&&!main.disabled){e.preventDefault();main.click()}
+    if(!practice&&e.key==='ArrowRight'&&!last){S.i++;renderQ()}
+    if(!practice&&e.key==='ArrowLeft'&&S.i>0){S.i--;renderQ()}
+  });
+}
+function pick(orig){
+  const it=S.items[S.i];
+  if(S.mode==='practice'&&it.checked)return;
+  if(it.q.a.length>1)it.sel=it.sel.includes(orig)?it.sel.filter(x=>x!==orig):[...it.sel,orig];
+  else{it.sel=[orig];if(S.mode==='practice')it.checked=true}
+  renderQ();
+}
+async function confirmFinish(){
+  const blank=S.items.filter(x=>!isDone(x,false)).length;
+  if(blank&&!await ask(`Còn ${blank} câu chưa trả lời. Nộp bài?`,'Nộp bài'))return;
+  finish();
+}
+function finish(){
+  setKeys(null);
+  const res=S.items.map(x=>({...x,ok:isRight(x)}));
+  const right=res.filter(r=>r.ok).length,n=res.length,pct=Math.round(right/n*100);
+  const st=getStat(S.set.id);const wrong=new Set(st.wrong||[]);
+  res.forEach(r=>r.ok?wrong.delete(r.key):wrong.add(r.key));
+  putStat(S.set.id,{wrong:[...wrong],last:{pct,right,n},best:Math.max(st.best||0,pct),runs:(st.runs||0)+1});
+  const bad=res.filter(r=>!r.ok);
+  const fmt=(r,arr)=>arr.length?arr.map(a=>L[r.order.indexOf(a)]+'. '+r.q.o[a]).join('; '):'(bỏ trống)';
+  render(
+    el('h1',{},'Kết quả'),
+    el('div',{class:'panel'},
+      el('div',{class:'score'},pct+'%'),
+      el('p',{class:'sub',style:'margin:0'},`Đúng ${right} / ${n} câu`),
+      el('div',{class:'actions'},
+        bad.length?el('button',{class:'primary',onclick:()=>start(bad.map(r=>r.key))},`Làm lại ${bad.length} câu sai`):null,
+        el('button',{class:bad.length?'ghost':'primary',onclick:home},'Về trang đầu'))),
+    bad.length?el('div',{class:'panel'},el('h2',{},'Các câu sai'),
+      bad.map(r=>r.kind==='mcq'?el('div',{class:'wrong'},
+        el('div',{class:'q'},r.q.q),
+        el('div',{class:'you'},'Bạn chọn: '+fmt(r,r.sel)),
+        el('div',{class:'right'},'Đáp án: '+fmt(r,r.q.a)),
+        r.q.ex?el('div',{class:'ex'},r.q.ex):null)
+       :el('div',{class:'wrong'},
+        el('div',{class:'q'},r.n.f),
+        el('div',{class:'you'},r.self===false?'Bạn tự chấm: chưa đúng':'(bỏ trống)'),
+        el('div',{class:'right'},'Đáp án: '+r.n.b)))):el('div',{class:'panel'},'Không sai câu nào. Làm tốt lắm!')
+  );
+  window.scrollTo(0,0);
+}
+
+/* ---------- FLASHCARDS ---------- */
+function cards(){
+  view=null;
+  const set=activeSet();
+  const deck=shuffle([...set.notes.map(n=>({f:n.f,b:n.b})),...set.questions.filter(q=>q.a.length).map(q=>({f:q.q,b:q.a.map(a=>q.o[a]).join('; ')}))]);
+  if(!deck.length){notify('Bộ này chưa có câu nào có đáp án.');return}
+  let i=0,flip=false;
+  const draw=()=>{
+    const c=deck[i];
+    render(
+      el('div',{class:'topbar'},el('span',{},`Thẻ ${i+1} / ${deck.length}`),el('button',{class:'ghost small',onclick:home},'Thoát')),
+      el('div',{class:'gauge'},el('span',{style:`width:${(i+1)/deck.length*100}%`})),
+      el('button',{class:'card'+(flip?' back':''),onclick:()=>{flip=!flip;draw()},'aria-live':'polite'},
+        el('div',{class:'side'},flip?'Đáp án':'Câu hỏi – chạm để lật'),el('div',{class:'txt'},flip?c.b:c.f)),
+      el('div',{class:'actions'},
+        el('button',{class:'ghost',disabled:i?false:'disabled',onclick:()=>{i--;flip=false;draw()}},'Thẻ trước'),
+        el('button',{class:'primary',onclick:()=>{if(i<deck.length-1){i++;flip=false;draw()}else home()}},i<deck.length-1?'Thẻ tiếp':'Xong')));
+  };
+  setKeys(e=>{
+    if(e.key===' '){e.preventDefault();flip=!flip;draw()}
+    if(e.key==='ArrowRight'&&i<deck.length-1){i++;flip=false;draw()}
+    if(e.key==='ArrowLeft'&&i>0){i--;flip=false;draw()}
+  });
+  draw();
+}
+
+/* ---------- SCAN ---------- */
+let SCAN={files:[],name:''},SCAN_CTL=null,SCAN_STOP=false;
+const defaultName=()=>'Bộ quét ngày '+new Date().toLocaleDateString('vi-VN');
+const PROMPT=`These photos are pages of handwritten study notes for an exam (usually NACE / coating inspection). Read every page and extract all quiz items, in the order they appear. Transcribe only what is written: never add answers of your own.
+
+Reply with ONLY one JSON object of this shape:
+{"questions":[{"q":"question text","options":["option text","..."],"answer":[0]}],"notes":[{"front":"question","back":"answer"}]}
+
+Rules:
+- A question with lettered options (A/B/C/D or a/b/c/d) goes in "questions". Put the options without their letters. Fix obvious spelling mistakes but keep the meaning.
+- "answer" is a list of 0-based option indexes that the writer marked: circled, ticked, underlined, highlighted or pointed at with an arrow. If several are marked as correct, list them all. Ignore crossed-out options. If nothing is marked, use "answer":[] – do NOT guess.
+- True/False items with options: options exactly ["True","False"].
+- An open (written-answer) item – a question or statement followed by an arrow, a dash or a written answer, with no lettered options – goes in "notes": the question as "front" and the written answer as "back". This includes answers like "True" or "False".
+- Skip lines that have neither options nor a written answer. Skip printed notebook headers.`;
+const ERR={not_granted:'Bạn chưa cho phép app dùng Claude nên không quét được.',sampling_disabled:'Tài khoản này không dùng được Claude trong app.',rate_limited:'Đã chạm giới hạn sử dụng. Đợi ít phút rồi bấm quét lại.',session_expired:'Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử lại.',image_rejected:'Có ảnh không đọc được. Hãy dùng ảnh JPG hoặc PNG.',images_unavailable:'Chế độ xem này không gửi được ảnh.',invalid_json:'Không đọc được kết quả của nhóm ảnh này.',refused:'Claude không xử lý được nhóm ảnh này.',empty_completion:'Không nhận được kết quả cho nhóm ảnh này.',prompt_too_large:'Nhóm ảnh quá lớn.'};
+const FATAL=['not_granted','sampling_disabled','rate_limited','session_expired','images_unavailable','not_declared','capability_disabled','capability_removed'];
+ERR.bad_key='API key không đúng hoặc đã bị xoá. Bấm “Đổi key” để nhập lại.';
+ERR.no_credit='Tài khoản API hết tiền. Nạp thêm ở mục Billing trên console.anthropic.com.';
+ERR.network='Không kết nối được tới Claude API. Kiểm tra mạng rồi thử lại.';
+FATAL.push('bad_key','no_credit');
+const errText=e=>ERR[e&&e.code]||'Lỗi kết nối. Thử lại sau.';
+const b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
+async function apiScan(imgs,signal){
+  const content=[];
+  for(const b of imgs)content.push({type:'image',source:{type:'base64',media_type:b.type||'image/jpeg',data:await b64(b)}});
+  content.push({type:'text',text:PROMPT});
+  let r;
+  try{
+    r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal,headers:{'content-type':'application/json','x-api-key':getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:API_MODEL,max_tokens:16000,messages:[{role:'user',content}]})});
+  }catch(e){throw {code:e&&e.name==='AbortError'?'cancelled':'network'}}
+  const data=await r.json().catch(()=>null);
+  if(!r.ok){
+    const msg=(data&&data.error&&data.error.message)||'';
+    if(r.status===401||r.status===403)throw {code:'bad_key'};
+    if(r.status===400&&/credit|billing|balance/i.test(msg))throw {code:'no_credit'};
+    if(r.status===429)throw {code:'rate_limited'};
+    if(r.status===413)throw {code:'prompt_too_large'};
+    throw {code:'upstream_error'};
+  }
+  const text=((data&&data.content)||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+  const a=text.indexOf('{'),z=text.lastIndexOf('}');
+  if(a<0||z<a)throw {code:'invalid_json'};
+  try{return JSON.parse(text.slice(a,z+1))}catch(e){throw {code:'invalid_json'}}
+}
+
+function scanView(){
+  view=scanView;setKeys(null);
+  if(!canScanNow()){render(el('h1',{},'Quét ảnh vở'),el('div',{class:'panel'},'Tài khoản này không dùng được tính năng quét ảnh.',el('div',{class:'actions'},el('button',{class:'primary',onclick:home},'Về trang đầu'))));return}
+  const key=getKey();
+  if(!IN_CLAUDE&&!key)return keyView();
+  const input=el('input',{type:'file',class:'hidden',accept:LIM().mediaTypes.join(','),multiple:'multiple',onchange:e=>{for(const f of e.target.files)SCAN.files.push({f,url:URL.createObjectURL(f)});scanView()}});
+  const scanning=!!SCAN_CTL;
+  render(
+    el('h1',{},'Quét ảnh vở'),
+    el('p',{class:'sub'},'Chụp rõ từng trang, đủ sáng. Claude chép lại câu hỏi, các phương án và đáp án bạn đã khoanh; câu tự luận được lấy kèm câu trả lời viết trong vở.'),
+    el('div',{class:'panel'},
+      el('div',{class:'label'},'Tên bộ câu hỏi'),
+      el('input',{type:'text',value:SCAN.name,placeholder:defaultName(),disabled:scanning?'disabled':false,oninput:e=>{SCAN.name=e.target.value}}),
+      el('div',{class:'thumbs'},SCAN.files.map((x,k)=>el('div',{class:'thumb'},el('img',{src:x.url,alt:'Trang '+(k+1)}),el('span',{},k+1),
+        scanning?null:el('button',{'aria-label':'Bỏ ảnh '+(k+1),onclick:()=>{URL.revokeObjectURL(x.url);SCAN.files.splice(k,1);scanView()}},'×')))),
+      input,
+      el('div',{class:'actions'},
+        scanning?el('button',{class:'ghost',onclick:()=>{SCAN_STOP=true;SCAN_CTL&&SCAN_CTL.abort()}},'Dừng quét'):[
+          el('button',{class:SCAN.files.length?'ghost':'primary',onclick:()=>input.click()},SCAN.files.length?'Thêm ảnh':'Chọn ảnh'),
+          SCAN.files.length?el('button',{class:'primary',onclick:runScan},`Quét ${SCAN.files.length} ảnh`):null,
+          el('button',{class:'ghost',onclick:home},'Huỷ')]),
+      el('div',{id:'scanstatus',class:'status'+(SCAN.msg?'':' hidden')+(SCAN.err?' err':'')},SCAN.msg||'')
+    ),
+    !IN_CLAUDE&&!scanning?el('p',{class:'meta'},'Đang dùng API key lưu trên máy này (…'+key.slice(-4)+'). ',el('button',{class:'ghost small',onclick:keyView},'Đổi key')):null
+  );
+}
+function keyView(){
+  view=null;setKeys(null);
+  const inp=el('input',{type:'password',value:getKey(),placeholder:'sk-ant-...',autocomplete:'off','aria-label':'API key'});
+  const saveK=()=>{const k=inp.value.trim();if(!/^sk-ant-/.test(k)){notify('API key phải bắt đầu bằng “sk-ant-”. Kiểm tra lại key bạn đã dán.');return}setKey(k);scanView()};
+  render(
+    el('h1',{},'Nhập API key để quét ảnh'),
+    el('p',{class:'sub'},'Khi mở app ngoài Claude, việc quét ảnh dùng Claude API bằng key của chính bạn. Chi phí tính vào tài khoản API của bạn.'),
+    el('div',{class:'panel'},
+      el('ol',{style:'margin:0 0 14px;padding-left:20px'},
+        el('li',{},'Vào console.anthropic.com, đăng nhập và nạp tiền ở mục Billing.'),
+        el('li',{},'Vào mục API Keys, bấm Create Key và copy key.'),
+        el('li',{},'Dán key vào ô dưới rồi bấm Lưu key.')),
+      inp,
+      el('p',{class:'meta',style:'margin:8px 0 0'},'Key chỉ lưu trong trình duyệt trên máy này và chỉ gửi tới Anthropic. Không lưu key trên máy dùng chung.'),
+      el('div',{class:'actions'},
+        el('button',{class:'primary',onclick:saveK},'Lưu key'),
+        getKey()?el('button',{class:'ghost',onclick:async()=>{if(await ask('Xoá API key khỏi máy này?','Xoá')){setKey('');home()}}},'Xoá key'):null,
+        el('button',{class:'ghost',onclick:home},'Huỷ')))
+  );
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')saveK()});
+  inp.focus();
+}
+async function prep(f){
+  if(IN_CLAUDE&&IMG.mediaTypes.includes(f.type)&&f.size<=IMG.maxInputBytes)return f;
+  try{
+    const bmp=await createImageBitmap(f);const k=Math.min(1,(IN_CLAUDE?2200:1800)/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(),'image/jpeg',0.9));
+  }catch(e){throw {code:'image_rejected'}}
+}
+function normalize(r){
+  const qs=[],ns=[];
+  for(const x of (r&&Array.isArray(r.questions)?r.questions:[])){
+    if(!x||typeof x.q!=='string'||!x.q.trim())continue;
+    let o=(Array.isArray(x.options)?x.options:[]).map(s=>String(s).trim()).filter(Boolean);
+    if(o.length<2)continue;
+    if(o.length===2&&/^true$/i.test(o[0])&&/^false$/i.test(o[1]))o=['True','False'];
+    let a=(Array.isArray(x.answer)?x.answer:[x.answer]).map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<o.length);
+    a=[...new Set(a)];
+    qs.push({q:x.q.trim(),o,a,src:a.length?'marked':'none',ex:''});
+  }
+  for(const x of (r&&Array.isArray(r.notes)?r.notes:[])){
+    if(x&&typeof x.front==='string'&&typeof x.back==='string'&&x.front.trim()&&x.back.trim())ns.push({f:x.front.trim(),b:x.back.trim()});
+  }
+  return {qs,ns};
+}
+async function runScan(){
+  const files=SCAN.files.map(x=>x.f);
+  const per=Math.max(1,Math.min(LIM().maxCount||1,3));
+  const draft={id:'s'+Date.now(),name:SCAN.name.trim()||defaultName(),questions:[],notes:[]};
+  const errors=[];SCAN_STOP=false;
+  for(let i=0;i<files.length;i+=per){
+    if(SCAN_STOP)break;
+    const batch=files.slice(i,i+per),from=i+1,to=i+batch.length,lbl=`Ảnh ${from}${to>from?'–'+to:''}`;
+    SCAN_CTL=new AbortController();
+    SCAN.msg=`Đang đọc ảnh ${from}${to>from?'–'+to:''} / ${files.length}… (mỗi nhóm có thể mất 30–90 giây)`;SCAN.err=false;
+    scanView();
+    try{
+      const imgs=[];for(const f of batch)imgs.push(await prep(f));
+      const r=IN_CLAUDE?await SAMPLE.json(PROMPT,{images:imgs,signal:SCAN_CTL.signal}):await apiScan(imgs,SCAN_CTL.signal);
+      const {qs,ns}=normalize(r);draft.questions.push(...qs);draft.notes.push(...ns);
+      if(!qs.length&&!ns.length)errors.push(`${lbl}: không tìm thấy câu hỏi nào.`);
+    }catch(e){
+      if(e&&e.code==='cancelled')break;
+      errors.push(`${lbl}: ${errText(e)}`);
+      if(e&&FATAL.includes(e.code))break;
+    }
+  }
+  SCAN_CTL=null;
+  if(!draft.questions.length&&!draft.notes.length){
+    SCAN.msg=errors.length?errors.join(' '):'Đã dừng quét, chưa có câu hỏi nào.';SCAN.err=!!errors.length;scanView();return;
+  }
+  SCAN.msg='';review(draft,true,errors);
+}
+
+/* ---------- REVIEW / EDIT ---------- */
+function review(draft,isNew,errors=[]){
+  view=null;setKeys(null);
+  const rerender=()=>{const y=window.scrollY;review(draft,isNew,errors);window.scrollTo(0,y)};
+  const noAns=draft.questions.filter(q=>!q.a.length).length;
+  const qBlocks=draft.questions.map((q,i)=>{
+    const tagHolder=el('span',{},srcTag(q));
+    return el('div',{class:'edq'},
+      el('div',{class:'edhead'},el('span',{},`Câu ${i+1}`),tagHolder,el('span',{class:'sp'}),
+        el('button',{class:'ghost small',onclick:()=>{draft.questions.splice(i,1);rerender()}},'Xoá câu')),
+      el('textarea',{rows:'2','aria-label':`Nội dung câu ${i+1}`,oninput:e=>{q.q=e.target.value}},q.q),
+      q.o.map((opt,k)=>el('div',{class:'edopt'},
+        el('input',{type:'checkbox','aria-label':`Đáp án đúng: ${L[k]}`,checked:q.a.includes(k),onchange:e=>{
+          q.a=e.target.checked?[...q.a,k].sort():q.a.filter(x=>x!==k);q.src=q.a.length?'marked':'none';tagHolder.replaceChildren(srcTag(q))}}),
+        el('strong',{},L[k]+'.'),
+        el('input',{type:'text',value:opt,'aria-label':`Phương án ${L[k]}`,oninput:e=>{q.o[k]=e.target.value}}))));
+  });
+  const nBlocks=draft.notes.map((n,i)=>el('div',{class:'notepair'},
+    el('input',{type:'text',value:n.f,'aria-label':'Câu hỏi',placeholder:'Câu hỏi',oninput:e=>{n.f=e.target.value}}),
+    el('input',{type:'text',value:n.b,'aria-label':'Đáp án',placeholder:'Đáp án',oninput:e=>{n.b=e.target.value}}),
+    el('button',{class:'ghost small',onclick:()=>{draft.notes.splice(i,1);rerender()}},'Xoá')));
+  const saveBtn=()=>el('button',{class:'primary',onclick:()=>saveDraft(draft)},'Lưu bộ câu hỏi');
+  render(
+    el('h1',{},isNew?'Kiểm tra kết quả quét':'Sửa bộ câu hỏi'),
+    el('p',{class:'sub'},`${draft.questions.length} câu trắc nghiệm, ${draft.notes.length} câu tự luận. Ô được tích là đáp án đúng – đọc lại và sửa chỗ sai trước khi lưu.`),
+    errors.length?el('div',{class:'status err',style:'margin:0 0 14px'},errors.map(t=>el('div',{},t))):null,
+    noAns?el('div',{class:'flag',style:'margin:0 0 14px'},`${noAns} câu trắc nghiệm chưa có đáp án trong vở. Các câu này không xuất hiện khi làm bài cho đến khi bạn tích đáp án.`):null,
+    el('div',{class:'panel'},el('div',{class:'label'},'Tên bộ câu hỏi'),el('input',{type:'text',value:draft.name,oninput:e=>{draft.name=e.target.value}}),
+      el('div',{class:'actions'},saveBtn(),el('button',{class:'ghost',onclick:async()=>{if(await ask(isNew?'Bỏ kết quả quét này?':'Bỏ các thay đổi?','Bỏ'))home()}},'Huỷ'))),
+    draft.questions.length?el('div',{class:'panel'},el('h2',{},'Câu trắc nghiệm'),qBlocks):null,
+    draft.notes.length?el('div',{class:'panel'},el('h2',{},'Câu tự luận'),el('p',{class:'meta',style:'margin:0 0 6px'},'Khi làm bài, câu tự luận hiện câu hỏi, bấm “Xem đáp án” sẽ hiện 1 kết quả.'),nBlocks):null,
+    el('div',{class:'actions'},saveBtn())
+  );
+}
+async function saveDraft(draft){
+  draft.name=draft.name.trim()||defaultName();
+  draft.questions=draft.questions.filter(q=>q.q.trim()).map(q=>({...q,q:q.q.trim(),o:q.o.map(s=>s.trim())}));
+  draft.notes=draft.notes.filter(n=>n.f.trim()&&n.b.trim());
+  if(!draft.questions.length&&!draft.notes.length){await notify('Bộ này không còn câu nào để lưu.');return}
+  const d=load();
+  if(draft.id==='builtin'){draft.builtin=true;d.builtinOverride=draft;if(d.stats)delete d.stats.builtin}
+  else{
+    d.sets=d.sets||[];
+    const i=d.sets.findIndex(s=>s.id===draft.id);
+    if(i>=0){d.sets[i]=draft;if(d.stats)delete d.stats[draft.id]}else d.sets.push(draft);
+  }
+  d.active=draft.id;
+  if(!save(d)){await notify('Không lưu được vì bộ nhớ trình duyệt đã đầy. Hãy xoá bớt bộ câu hỏi cũ.');return}
+  SCAN.files.forEach(x=>URL.revokeObjectURL(x.url));SCAN={files:[],name:''};
+  home();window.scrollTo(0,0);
+}
+
+// Mang các bộ đã quét từ phiên bản trước sang (bỏ đáp án đề xuất)
+(function migrate(){
+  const d=load();if(d.migrated)return;
+  try{const old=JSON.parse(localStorage.getItem('nace-quiz-v2'))||{};
+    d.sets=(old.sets||[]).filter(s=>s.questions.length||s.notes.length).map(s=>({...s,questions:s.questions.map(q=>({q:q.q,o:q.o,a:q.src==='marked'?q.a:[],src:q.src==='marked'?'marked':'none',ex:''}))}));
+    if(old.cfg)Object.assign(cfg,{mode:old.cfg.mode||cfg.mode,count:old.cfg.count||cfg.count,shufQ:old.cfg.shufQ??cfg.shufQ,shufO:old.cfg.shufO??cfg.shufO});
+    d.cfg=cfg;
+  }catch(e){}
+  d.migrated=true;save(d);
+})();
+home();
+</script>
+</body>
+</html>
